@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUM · Quadro globale</title>
+<meta name="description" content="Terremoti, tempeste geomagnetiche, cicloni, vulcani e incendi degli ultimi 7 giorni, in diretta da fonti aperte.">
+<meta property="og:title" content="NEXUM · Quadro globale">
+<meta property="og:description" content="Il mondo degli ultimi 7 giorni, in diretta da fonti aperte: USGS, NOAA, GDACS.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0e1214">
+<style>
+:root{--bg:#0e1214;--panel:#151b1e;--line:#2c363b;--fg:#e9ecee;--mut:#8f9aa0;--gold:#d9a54a;--red:#e2574c;--orange:#e8963a;--green:#5fae7a;--bar:#3a464c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.45}
+a{color:var(--gold)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;gap:20px}
+header h1{font-family:var(--sans);font-weight:500;letter-spacing:.28em;font-size:clamp(26px,5vw,38px);margin:0}
+header h1 b{color:var(--gold);font-weight:500}
+header h1 span{letter-spacing:.04em;color:var(--mut);font-weight:400;font-size:.55em;margin-left:.4em}
+.lead{color:var(--mut);margin:6px 0 0;max-width:70ch}
+.take{margin:14px 0 0;font-size:clamp(17px,2.4vw,20px);max-width:62ch;font-family:var(--serif)}
+.take b{color:var(--gold);font-weight:400}
+.status{font-size:13px;color:var(--mut);display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(95,174,122,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(95,174,122,0)}100%{box-shadow:0 0 0 0 rgba(95,174,122,0)}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+button.ref{all:unset;cursor:pointer;color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+.kpi .lab{font-size:13px;color:var(--mut)}
+.kpi .val{font-family:var(--serif);font-size:clamp(30px,5vw,40px);line-height:1.1;margin:6px 0;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:13px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
+h2{font-size:17px;font-weight:600;margin:0}
+.note{font-size:13px;color:var(--mut);margin:4px 0 14px}
+.chart{position:relative;min-height:200px}
+.tip{position:absolute;background:#1d2529;border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.tip .d{color:var(--mut)}
+.tbox{max-height:440px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:500;font-size:12px;color:var(--mut);padding:6px 8px;border-bottom:1px solid var(--line)}
+th button{all:unset;cursor:pointer}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.num{text-align:right}
+input[type=search]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;margin-bottom:10px}
+.pill{display:inline-block;padding:0 .55em;border-radius:999px;font-size:12px;border:1px solid currentColor}
+.pill.Red{color:var(--red)}.pill.Orange{color:var(--orange)}
+.m7{color:var(--red)}.m6{color:var(--orange)}
+.empty,.err{color:var(--mut);font-size:13px;display:flex;align-items:center;justify-content:center;min-height:inherit;gap:8px}
+.err i{width:6px;height:6px;border-radius:50%;background:var(--red)}
+.skel{display:inline-block;width:2.2em;height:.8em;border-radius:6px;background:linear-gradient(90deg,#1c2427,#252f33,#1c2427);background-size:200% 100%;animation:sh 1.4s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.badge{font-size:11px;color:var(--orange);margin-left:6px}
+@media (max-width:520px){.hn{display:none}}
+button.card.kpi{all:unset;box-sizing:border-box;display:block;cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0;transition:border-color .15s}
+button.card.kpi:hover,button.card.kpi:focus-visible{border-color:var(--gold)}
+button.card.kpi .lab::after{content:" ⓘ";color:var(--gold);opacity:.8}
+button.src{all:unset;cursor:pointer;font-size:12px;font-weight:400;color:var(--gold);margin-left:8px;border-bottom:1px dotted var(--gold)}
+#sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:9}
+#sheet{position:fixed;z-index:10;background:var(--panel);border:1px solid var(--line);display:none;flex-direction:column;
+  left:0;right:0;bottom:0;max-height:85vh;border-radius:16px 16px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+@media (min-width:760px){#sheet{left:auto;top:0;bottom:0;width:440px;max-height:none;border-radius:0}}
+#sheet.open,#sheet-bg.open{display:flex}#sheet-bg.open{display:block}
+.sh-head{display:flex;align-items:flex-start;gap:10px;padding:18px 18px 10px;border-bottom:1px solid var(--line)}
+.sh-head h3{margin:0;font-size:17px;flex:1}
+.sh-head button{all:unset;cursor:pointer;font-size:22px;line-height:1;color:var(--mut);padding:0 4px}
+.sh-body{overflow:auto;padding:14px 18px 22px}
+.sh-big{font-family:var(--serif);font-size:34px;margin:0 0 4px}
+.sh-sec{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:18px 0 6px}
+.sh-kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.sh-kv dt{color:var(--mut)}.sh-kv dd{margin:0;word-break:break-word}
+.state{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid currentColor}
+.state.live{color:var(--green)}.state.copy{color:var(--orange)}
+.sh-body table td,.sh-body table th{padding:5px 6px}
+.sh-body tr.hl td{background:rgba(217,165,74,.14)}
+@media print{#sheet,#sheet-bg,button.src{display:none!important}button.card.kpi .lab::after{content:""}}
+.zsel{font-size:13px;color:var(--mut);display:inline-flex;gap:8px;align-items:center;margin-bottom:8px}
+.zsel select{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:4px 8px;font:inherit}
+@media print{.zsel{display:none}}
+.dot.off{background:var(--orange);animation:none}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{all:unset;cursor:pointer;font-size:14px;padding:7px 14px;border:1px solid var(--gold);color:var(--gold);border-radius:999px}
+.btn:hover{background:rgba(217,165,74,.12)}
+@media print{
+  :root{--bg:#fff;--panel:#fff;--line:#ccc;--fg:#111;--mut:#555;--bar:#bbb}
+  .tools,.status button,input[type=search],.dot{display:none!important}
+  .tbox{max-height:none;overflow:visible}
+  .card{break-inside:avoid}
+  .wrap{padding:0}
+  .hn{display:table-cell!important}
+}
+footer{font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:14px}
+footer p{margin:4px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>NEX<b>U</b>M <span>· Quadro globale</span></h1>
+    <p class="lead">Terremoti, attività geomagnetica, cicloni, vulcani e incendi degli ultimi 7 giorni, letti in diretta da fonti aperte ogni volta che apri la pagina.</p>
+    <p class="take" id="take"><span class="skel"></span></p>
+    <div class="status"><span class="dot" id="dot"></span><span id="upd">Caricamento dati…</span> · <button class="ref" id="refresh">Aggiorna</button></div>
+    <div class="tools"><button class="btn" id="b-pdf">Scarica PDF</button><button class="btn" id="b-csv">Scarica dati CSV</button></div>
+  </header>
+
+  <section class="kpis">
+    <button class="card kpi" data-info="max" aria-label="Mostra fonte e dati"><div class="lab">Magnitudo massima · 7 gg</div><div class="val" id="k-max"><span class="skel"></span></div><div class="sub" id="k-max-s">&nbsp;</div></button>
+    <button class="card kpi" data-info="m5" aria-label="Mostra fonte e dati"><div class="lab">Terremoti M5+ · 7 gg</div><div class="val" id="k-m5"><span class="skel"></span></div><div class="sub" id="k-m5-s">&nbsp;</div></button>
+    <button class="card kpi" data-info="kp" aria-label="Mostra fonte e dati"><div class="lab">Kp massimo · 7 gg</div><div class="val" id="k-kp"><span class="skel"></span></div><div class="sub" id="k-kp-s">&nbsp;</div></button>
+    <button class="card kpi" data-info="al" aria-label="Mostra fonte e dati"><div class="lab">Allerte GDACS arancio o rosse</div><div class="val" id="k-al"><span class="skel"></span></div><div class="sub" id="k-al-s">&nbsp;</div></button>
+    <button class="card kpi" data-info="el" aria-label="Mostra fonte e dati"><div class="lab">Elettricità oggi · <span id="k-el-z">Nord Italia</span></div><div class="val" id="k-el"><span class="skel"></span></div><div class="sub" id="k-el-s">&nbsp;</div></button>
+    <button class="card kpi" data-info="buoy" aria-label="Mostra fonte e dati"><div class="lab">Onda più alta · boe</div><div class="val" id="k-bu"><span class="skel"></span></div><div class="sub" id="k-bu-s">&nbsp;</div></button>
+    <button class="card kpi" data-info="wf" aria-label="Mostra fonte e dati"><div class="lab">Incendi segnalati GDACS</div><div class="val" id="k-wf"><span class="skel"></span></div><div class="sub" id="k-wf-s">&nbsp;</div></button>
+  </section>
+
+  <section class="grid">
+    <div class="card"><h2>Attività geomagnetica <button class="src" data-info="kp">Fonte e dati</button></h2>
+      <p class="note">Indice Kp planetario ogni 3 ore. Da 5 in su è tempesta (G1), 7 è forte (G3), 9 estrema (G5).</p>
+      <div class="chart" id="kp-chart"></div></div>
+    <div class="card"><h2>Terremoti per giorno <button class="src" data-info="day">Fonte e dati</button></h2>
+      <p class="note">Scosse M4.5+ al giorno (ora italiana), in oro quelle M5+.</p>
+      <div class="chart" id="eq-chart"></div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><h2>Prezzo dell'elettricità <button class="src" data-info="el">Fonte e dati</button></h2>
+      <p class="note">Borsa elettrica del giorno prima, €/MWh ogni 15 minuti, ora italiana. In oro le ore più care, in verde le più convenienti.</p>
+      <label class="zsel">Zona <select id="zone">
+        <option value="IT-North">Nord Italia</option><option value="DE-LU">Germania</option><option value="FR">Francia</option>
+        <option value="CH">Svizzera</option><option value="AT">Austria</option><option value="SI">Slovenia</option></select></label>
+      <div class="chart" id="el-chart"></div></div>
+    <div class="card"><h2>Boe oceaniche <button class="src" data-info="buoy">Fonte e dati</button></h2>
+      <p class="note">Le 15 boe con le onde più alte nelle ultime ore. Tocca il codice per la scheda della boa.</p>
+      <div class="tbox" style="max-height:320px"><table><thead><tr><th>Boa</th><th class="num">Onda m</th><th class="num">Vento m/s</th><th class="num hn">Acqua °C</th><th class="hn">Posizione</th></tr></thead><tbody id="bu-body"></tbody></table></div></div>
+  </section>
+
+  <section class="card"><h2>Allerte principali <span class="badge" id="gd-badge"></span> <button class="src" data-info="al">Fonte e dati</button></h2>
+    <p class="note">Eventi GDACS con allerta arancio o rossa: impatto stimato sulla popolazione.</p>
+    <div class="tbox"><table><thead><tr><th>Allerta</th><th>Tipo</th><th>Paese</th><th>Evento</th><th class="hn">Inizio</th></tr></thead><tbody id="al-body"></tbody></table></div>
+  </section>
+
+  <section class="card"><h2>Terremoti M5+ della settimana <button class="src" data-info="m5">Fonte e dati</button></h2>
+    <p class="note">Catalogo USGS. Tocca un'intestazione per ordinare; tocca una riga per aprire la scheda USGS.</p>
+    <input type="search" id="q" placeholder="Cerca un luogo…" aria-label="Cerca un luogo">
+    <div class="tbox"><table id="eq-table"><thead><tr>
+      <th class="num" aria-sort="descending"><button data-k="mag">Mag.</button></th>
+      <th><button data-k="place">Luogo</button></th>
+      <th><button data-k="time">Ora</button></th>
+      <th class="num hn"><button data-k="depth">Prof. km</button></th>
+    </tr></thead><tbody id="eq-body"></tbody></table></div>
+  </section>
+
+  <footer>
+    <p>Fonti: <a href="https://earthquake.usgs.gov/" rel="noopener">USGS Earthquake Hazards Program</a> (pubblico dominio) · <a href="https://www.swpc.noaa.gov/" rel="noopener">NOAA Space Weather Prediction Center</a> (pubblico dominio) · <a href="https://www.gdacs.org/" rel="noopener">GDACS</a>, Commissione Europea e Nazioni Unite · Prezzi elettricità: <a href="https://www.smard.de/" rel="noopener">Bundesnetzagentur | SMARD.de</a> (CC BY 4.0) via <a href="https://www.energy-charts.info/" rel="noopener">Energy-Charts</a> · Boe: <a href="https://www.ndbc.noaa.gov/" rel="noopener">NOAA National Data Buoy Center</a> (pubblico dominio).</p>
+    <p>I dati sono mostrati come li pubblicano le fonti; le etichette sono tradotte. Le stime d'impatto sono quelle GDACS. Nessun dato dell'utente viene raccolto.</p>
+    <p><a href="https://nexum.pezzalihub.app">← Torna a NEXUM</a></p>
+  </footer>
+</div>
+
+<div id="sheet-bg"></div>
+<aside id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+  <div class="sh-head"><h3 id="sh-title"></h3><button id="sh-x" aria-label="Chiudi">×</button></div>
+  <div class="sh-body" id="sh-body"></div>
+</aside>
+<script>
+(() => {
+const USGS = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson';
+const KP = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json';
+const ELEC = z => 'https://api.energy-charts.info/price?bzn=' + encodeURIComponent(z);
+const ERDDAP = 'https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Clongitude%2Clatitude%2Ctime%2Cwspd%2Cgst%2Cwvht%2Cwtmp&time%3E=now-3hours&orderByMax(%22station%2Ctime%22)';
+const NDBC = 'https://www.ndbc.noaa.gov/data/latest_obs/latest_obs.txt';
+const ZONES = { 'IT-North': 'Nord Italia', 'DE-LU': 'Germania', FR: 'Francia', CH: 'Svizzera', AT: 'Austria', SI: 'Slovenia' };
+const GDACS = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtypes=EQ,TC,FL,VO,WF,DR';
+
+const $ = id => document.getElementById(id);
+const TZ = 'Europe/Rome';
+const fmt = (d, o = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) => new Intl.DateTimeFormat('it-IT', Object.assign({ timeZone: TZ }, o)).format(d);
+const dayKey = d => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+const TYPE = { EQ: 'Terremoto', TC: 'Ciclone', VO: 'Vulcano', WF: 'Incendio', FL: 'Alluvione', DR: 'Siccità' };
+const gLevel = k => k >= 9 ? 'G5 estrema' : k >= 8 ? 'G4 severa' : k >= 7 ? 'G3 forte' : k >= 6 ? 'G2 moderata' : k >= 5 ? 'G1 minore' : null;
+const setText = (id, t) => { $(id).textContent = t; };
+const errBox = (el, msg) => { el.innerHTML = ''; const d = document.createElement('div'); d.className = 'err'; d.append(document.createElement('i'), msg); el.append(d); };
+const svgEl = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+
+const SNAP2 = {"el":{"zone":"IT-North","ts":[1791669600,1791670500,1791671400,1791672300,1791673200,1791674100,1791675000,1791675900,1791676800,1791677700,1791678600,1791679500,1791680400,1791681300,1791682200,1791683100,1791684000,1791684900,1791685800,1791686700,1791687600,1791688500,1791689400,1791690300,1791691200,1791692100,1791693000,1791693900,1791694800,1791695700,1791696600,1791697500,1791698400,1791699300,1791700200,1791701100,1791702000,1791702900,1791703800,1791704700,1791705600,1791706500,1791707400,1791708300,1791709200,1791710100,1791711000,1791711900,1791712800,1791713700,1791714600,1791715500,1791716400,1791717300,1791718200,1791719100,1791720000,1791720900,1791721800,1791722700,1791723600,1791724500,1791725400,1791726300,1791727200,1791728100,1791729000,1791729900,1791730800,1791731700,1791732600,1791733500,1791734400,1791735300,1791736200,1791737100,1791738000,1791738900,1791739800,1791740700,1791741600,1791742500,1791743400,1791744300,1791745200,1791746100,1791747000,1791747900,1791748800,1791749700,1791750600,1791751500,1791752400,1791753300,1791754200,1791755100],"price":[249.81,240.0,221.15,220.52,236.25,249.81,243.39,228.63,241.59,228.0,217.62,218.75,218.78,205.0,213.39,213.39,205.0,197.62,195.39,194.87,213.39,209.5,204.43,198.16,249.81,249.81,220.99,213.39,225.49,220.99,221.82,200.95,221.76,195.57,174.91,168.16,195.53,186.1,164.59,165.82,171.93,178.62,164.0,149.34,119.07,134.63,127.41,119.35,131.27,120.0,106.02,100.06,114.71,113.2,120.93,114.84,101.0,110.0,125.0,125.24,136.33,129.35,86.5,103.6,100.87,146.46,191.08,238.39,175.97,195.39,219.99,259.85,220.34,228.39,228.8,241.47,223.63,249.81,251.79,249.81,249.81,237.0,234.18,234.25,229.01,242.0,249.81,232.26,242.0,249.81,221.99,216.0,249.81,219.81,205.6,195.39],"license":"CC BY 4.0 (creativecommons.org/licenses/by/4.0) from Bundesnetzagentur | SMARD.de"},"buoys":[{"stn":"46071","lat":51.035,"lon":179.808,"time":"2026-10-10T23:20:00Z","wspd":10.0,"gst":13.0,"wvht":5.2,"wtmp":6.8},{"stn":"46035","lat":57.034,"lon":-177.468,"time":"2026-10-10T23:20:00Z","wspd":12.0,"gst":15.0,"wvht":4.4,"wtmp":7.1},{"stn":"46214","lat":37.944,"lon":-123.466,"time":"2026-10-10T22:56:00Z","wspd":null,"gst":null,"wvht":4.4,"wtmp":16.0},{"stn":"46014","lat":39.225,"lon":-123.98,"time":"2026-10-10T23:20:00Z","wspd":15.0,"gst":17.0,"wvht":4.3,"wtmp":13.4},{"stn":"46073","lat":54.985,"lon":-171.874,"time":"2026-10-10T23:10:00Z","wspd":11.0,"gst":13.0,"wvht":4.3,"wtmp":9.0},{"stn":"46239","lat":36.342,"lon":-122.11,"time":"2026-10-10T23:00:00Z","wspd":null,"gst":null,"wvht":4.3,"wtmp":19.1},{"stn":"46013","lat":38.235,"lon":-123.317,"time":"2026-10-10T23:10:00Z","wspd":13.0,"gst":17.0,"wvht":3.7,"wtmp":null},{"stn":"46028","lat":35.763,"lon":-121.9,"time":"2026-10-10T23:20:00Z","wspd":10.0,"gst":13.0,"wvht":3.7,"wtmp":17.2},{"stn":"46070","lat":55.048,"lon":175.246,"time":"2026-10-10T23:20:00Z","wspd":10.0,"gst":13.0,"wvht":3.7,"wtmp":7.1},{"stn":"63115","lat":61.6,"lon":1.3,"time":"2026-10-10T23:00:00Z","wspd":3.6,"gst":null,"wvht":3.7,"wtmp":null},{"stn":"46022","lat":40.716,"lon":-124.54,"time":"2026-10-10T23:10:00Z","wspd":12.0,"gst":15.0,"wvht":3.6,"wtmp":12.0},{"stn":"46072","lat":51.645,"lon":-172.145,"time":"2026-10-10T23:20:00Z","wspd":9.0,"gst":13.0,"wvht":3.6,"wtmp":8.3},{"stn":"41025","lat":35.026,"lon":-75.38,"time":"2026-10-10T23:20:00Z","wspd":14.0,"gst":18.0,"wvht":3.6,"wtmp":27.1},{"stn":"44139","lat":44.24,"lon":-57.1,"time":"2026-10-10T23:00:00Z","wspd":12.0,"gst":16.0,"wvht":3.6,"wtmp":13.7},{"stn":"46213","lat":40.291,"lon":-124.748,"time":"2026-10-10T23:00:00Z","wspd":null,"gst":null,"wvht":3.6,"wtmp":13.3}],"buoyCount":484};
+const SNAP = {"at":"2026-10-10T23:15:00Z","quakes":[{"mag":7.7,"place":"12 km WSW of Pitaloza Arriba, Panama","time":1791568566000,"depth":12.6},{"mag":6.6,"place":"14 km W of Río Grande, Panama","time":1791577539000,"depth":10.0},{"mag":6.3,"place":"102 km NE of Norsup, Vanuatu","time":1791450007000,"depth":10.0},{"mag":6.0,"place":"7 km N of La Tronosa, Panama","time":1791605641000,"depth":10.0},{"mag":5.9,"place":"West of Macquarie Island","time":1791557381000,"depth":10.0},{"mag":5.8,"place":"1 km S of El Cacao, Panama","time":1791571066000,"depth":10.0},{"mag":5.5,"place":"3 km SW of Bajo Corral, Panama","time":1791570135000,"depth":10.0},{"mag":5.5,"place":"17 km SW of Burias, Philippines","time":1791446879000,"depth":52.1},{"mag":5.5,"place":"West of Macquarie Island","time":1791442007000,"depth":10.0},{"mag":5.4,"place":"9 km SSE of Los Asientos, Panama","time":1791587557000,"depth":10.0},{"mag":5.4,"place":"99 km NE of Norsup, Vanuatu","time":1791553902000,"depth":10.0},{"mag":5.3,"place":"Southeast of Easter Island","time":1791668042000,"depth":10.0},{"mag":5.3,"place":"41 km NNE of Yigo Village, Guam","time":1791604698000,"depth":111.6},{"mag":5.2,"place":"11 km SE of Río Grande, Panama","time":1791575335000,"depth":10.0},{"mag":5.2,"place":"117 km SE of Bitung, Indonesia","time":1791522664000,"depth":40.0},{"mag":5.2,"place":"Chagos Archipelago region","time":1791385165000,"depth":10.0},{"mag":5.1,"place":"72 km SSW of Colchane, Chile","time":1791541334000,"depth":123.8},{"mag":5.1,"place":"1 km NNE of Tonosí, Panama","time":1791599192000,"depth":10.0},{"mag":5.1,"place":"133 km WNW of Ternate, Indonesia","time":1791597642000,"depth":10.0},{"mag":5.1,"place":"236 km E of Levuka, Fiji","time":1791454048000,"depth":602.3},{"mag":5.0,"place":"141 km E of Bitung, Indonesia","time":1791610321000,"depth":10.0},{"mag":5.0,"place":"6 km NE of La Tronosa, Panama","time":1791577297000,"depth":10.0},{"mag":5.0,"place":"13 km W of Río Grande, Panama","time":1791578528000,"depth":10.0},{"mag":5.0,"place":"14 km SE of Río Grande, Panama","time":1791572689000,"depth":10.0},{"mag":5.0,"place":"18 km S of Los Asientos, Panama","time":1791571812000,"depth":10.0},{"mag":5.0,"place":"19 km S of Leones Arriba, Panama","time":1791571624000,"depth":10.0},{"mag":5.0,"place":"8 km ESE of La Tronosa, Panama","time":1791587402000,"depth":10.0},{"mag":5.0,"place":"92 km N of Ruteng, Indonesia","time":1791434939000,"depth":10.0}],"kp":[["2026-10-03T00:00:00Z",2.33],["2026-10-03T03:00:00Z",2.67],["2026-10-03T06:00:00Z",2.67],["2026-10-03T09:00:00Z",2.0],["2026-10-03T12:00:00Z",1.67],["2026-10-03T15:00:00Z",0.67],["2026-10-03T18:00:00Z",0.33],["2026-10-03T21:00:00Z",1.0],["2026-10-04T00:00:00Z",3.0],["2026-10-04T03:00:00Z",3.33],["2026-10-04T06:00:00Z",4.33],["2026-10-04T09:00:00Z",5.0],["2026-10-04T12:00:00Z",4.67],["2026-10-04T15:00:00Z",4.33],["2026-10-04T18:00:00Z",5.67],["2026-10-04T21:00:00Z",4.67],["2026-10-05T00:00:00Z",4.0],["2026-10-05T03:00:00Z",5.33],["2026-10-05T06:00:00Z",2.33],["2026-10-05T09:00:00Z",3.33],["2026-10-05T12:00:00Z",2.67],["2026-10-05T15:00:00Z",3.67],["2026-10-05T18:00:00Z",3.67],["2026-10-05T21:00:00Z",4.0],["2026-10-06T00:00:00Z",3.0],["2026-10-06T03:00:00Z",3.0],["2026-10-06T06:00:00Z",2.33],["2026-10-06T09:00:00Z",2.67],["2026-10-06T12:00:00Z",2.67],["2026-10-06T15:00:00Z",1.67],["2026-10-06T18:00:00Z",2.0],["2026-10-06T21:00:00Z",2.33],["2026-10-07T00:00:00Z",1.0],["2026-10-07T03:00:00Z",1.33],["2026-10-07T06:00:00Z",1.0],["2026-10-07T09:00:00Z",0.67],["2026-10-07T12:00:00Z",1.0],["2026-10-07T15:00:00Z",2.67],["2026-10-07T18:00:00Z",2.33],["2026-10-07T21:00:00Z",1.0],["2026-10-08T00:00:00Z",1.0],["2026-10-08T03:00:00Z",1.67],["2026-10-08T06:00:00Z",1.0],["2026-10-08T09:00:00Z",2.0],["2026-10-08T12:00:00Z",2.0],["2026-10-08T15:00:00Z",1.33],["2026-10-08T18:00:00Z",2.0],["2026-10-08T21:00:00Z",1.33],["2026-10-09T00:00:00Z",3.33],["2026-10-09T03:00:00Z",2.67],["2026-10-09T06:00:00Z",2.0],["2026-10-09T09:00:00Z",4.0],["2026-10-09T12:00:00Z",2.0],["2026-10-09T15:00:00Z",1.0],["2026-10-09T18:00:00Z",1.33],["2026-10-09T21:00:00Z",2.33],["2026-10-10T00:00:00Z",2.33],["2026-10-10T03:00:00Z",3.0],["2026-10-10T06:00:00Z",3.0],["2026-10-10T09:00:00Z",2.33],["2026-10-10T12:00:00Z",3.33],["2026-10-10T15:00:00Z",7.0]],"gdacs":[{"eventtype":"EQ","alertlevel":"Orange","country":"Panama","name":"M7.7, 590.000 persone in MMI≥VII","fromdate":"2026-10-09T17:56:06Z"},{"eventtype":"EQ","alertlevel":"Orange","country":"Vanuatu","name":"M6.3, 10.000 persone in MMI≥VII","fromdate":"2026-10-08T09:00:07Z"},{"eventtype":"TC","alertlevel":"Red","country":"Mexico","name":"Ciclone SIMON-26, 0,845 mln persone esposte a venti Cat.1+","fromdate":"2026-10-07T15:00:00Z"},{"eventtype":"TC","alertlevel":"Orange","country":"United States","name":"Ciclone ISAIAS-26, 0,946 mln persone esposte a venti Cat.1+","fromdate":"2026-10-06T21:00:00Z"},{"eventtype":"VO","alertlevel":"Orange","country":"Philippines","name":"Eruzione in corso: Taal","fromdate":"2026-10-08T10:29:00Z"},{"eventtype":"EQ","alertlevel":"Green","country":"Panama","name":"M6.6","fromdate":"2026-10-09T20:25:39Z"},{"eventtype":"EQ","alertlevel":"Green","country":"Panama","name":"M6.0","fromdate":"2026-10-10T04:14:01Z"},{"eventtype":"EQ","alertlevel":"Green","country":"Panama","name":"M5.8","fromdate":"2026-10-09T18:37:46Z"},{"eventtype":"EQ","alertlevel":"Green","country":"Panama","name":"M5.5","fromdate":"2026-10-09T18:22:15Z"},{"eventtype":"EQ","alertlevel":"Green","country":"West of Macquarie Island","name":"M5.9","fromdate":"2026-10-09T14:49:41Z"},{"eventtype":"EQ","alertlevel":"Green","country":"West of Macquarie Island","name":"M5.5","fromdate":"2026-10-08T06:46:47Z"},{"eventtype":"EQ","alertlevel":"Green","country":"Philippines","name":"M5.5","fromdate":"2026-10-08T08:07:59Z"},{"eventtype":"EQ","alertlevel":"Green","country":"United States","name":"M5.6","fromdate":"2026-10-06T18:34:37Z"},{"eventtype":"EQ","alertlevel":"Green","country":"Russia","name":"M5.8","fromdate":"2026-10-06T16:48:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Australia","name":"Incendio boschivo","fromdate":"2026-10-08T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Australia","name":"Incendio boschivo","fromdate":"2026-10-08T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Australia","name":"Incendio boschivo","fromdate":"2026-10-07T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Australia","name":"Incendio boschivo","fromdate":"2026-10-07T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Australia","name":"Incendio boschivo","fromdate":"2026-10-07T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Mongolia","name":"Incendio boschivo","fromdate":"2026-10-08T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Mongolia","name":"Incendio boschivo","fromdate":"2026-10-08T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Russian Federation","name":"Incendio boschivo","fromdate":"2026-10-08T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Russian Federation","name":"Incendio boschivo","fromdate":"2026-10-07T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Brazil","name":"Incendio boschivo","fromdate":"2026-10-08T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Brazil","name":"Incendio boschivo","fromdate":"2026-10-07T00:00:00Z"},{"eventtype":"WF","alertlevel":"Green","country":"Bolivia","name":"Incendio boschivo","fromdate":"2026-10-07T00:00:00Z"}]};
+let cur = { quakes: [], all: [], top: null, kp: [], peak: null, major: [], wf: [], days: [] };
+const SRC = {};
+const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
+async function getJSON(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+/* ---------- Terremoti ---------- */
+let quakes = [], sortK = { k: 'mag', dir: -1 }, qText = '';
+function renderQuakes(geo, ref) {
+  const all = geo.features.map(f => ({
+    mag: f.properties.mag, place: f.properties.place || '—', time: new Date(f.properties.time),
+    depth: f.geometry.coordinates[2], url: f.properties.url
+  })).filter(q => q.mag != null && q.time.getTime() >= ref - 7 * 864e5);
+  quakes = all.filter(q => q.mag >= 5);
+  const top = all.reduce((a, b) => (b.mag > a.mag ? b : a), all[0]);
+  if (top) {
+    setText('k-max', top.mag.toFixed(1));
+    setText('k-max-s', shortPlace(top.place) + ', ' + fmt(top.time, { day: 'numeric', month: 'long' }));
+  }
+  setText('k-m5', quakes.length);
+  const zones = {};
+  quakes.forEach(q => { const z = shortPlace(q.place); zones[z] = (zones[z] || 0) + 1; });
+  const topZone = Object.entries(zones).sort((a, b) => b[1] - a[1])[0];
+  setText('k-m5-s', topZone ? `${topZone[1]} in ${topZone[0]} · ${all.length} M4.5+` : `${all.length} M4.5+`);
+  cur.quakes = quakes; cur.all = all; cur.top = top;
+  drawQuakeTable();
+  drawEqChart(all, ref);
+  return { top, topZone, n5: quakes.length };
+}
+function shortPlace(p) { const i = p.lastIndexOf(', '); return i >= 0 ? p.slice(i + 2) : p.replace(/^.*\bof\s+/, ''); }
+function drawQuakeTable() {
+  const tb = $('eq-body'); tb.textContent = '';
+  const rows = quakes.filter(q => q.place.toLowerCase().includes(qText)).sort((a, b) => {
+    const va = a[sortK.k], vb = b[sortK.k]; return (va < vb ? -1 : va > vb ? 1 : 0) * sortK.dir;
+  });
+  if (!rows.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 4; td.className = 'empty'; td.textContent = 'Nessuna scossa trovata'; tr.append(td); tb.append(tr); }
+  rows.forEach(q => {
+    const tr = document.createElement('tr'); tr.style.cursor = 'pointer';
+    if (q.url) tr.addEventListener('click', () => window.open(q.url, '_blank', 'noopener')); else tr.style.cursor = '';
+    const c1 = document.createElement('td'); c1.className = 'num ' + (q.mag >= 7 ? 'm7' : q.mag >= 6 ? 'm6' : ''); c1.textContent = q.mag.toFixed(1);
+    const c2 = document.createElement('td'); c2.textContent = q.place;
+    const c3 = document.createElement('td'); c3.textContent = fmt(q.time);
+    const c4 = document.createElement('td'); c4.className = 'num hn'; c4.textContent = Math.round(q.depth).toLocaleString('it-IT');
+    tr.append(c1, c2, c3, c4); tb.append(tr);
+  });
+  document.querySelectorAll('#eq-table th').forEach(th => {
+    const k = th.querySelector('button').dataset.k;
+    th.setAttribute('aria-sort', k === sortK.k ? (sortK.dir < 0 ? 'descending' : 'ascending') : 'none');
+  });
+}
+document.querySelectorAll('#eq-table th button').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.k; sortK = { k, dir: sortK.k === k ? -sortK.dir : (k === 'place' ? 1 : -1) }; drawQuakeTable();
+}));
+$('q').addEventListener('input', e => { qText = e.target.value.toLowerCase(); drawQuakeTable(); });
+
+function drawEqChart(all, ref) {
+  const box = $('eq-chart'); box.innerHTML = '';
+  const days = [];
+  for (let i = 6; i >= 0; i--) days.push(dayKey(new Date(ref - i * 864e5)));
+  const by = Object.fromEntries(days.map(d => [d, { all: 0, m5: 0 }]));
+  all.forEach(q => { const k = dayKey(q.time); if (by[k]) { by[k].all++; if (q.mag >= 5) by[k].m5++; } });
+  cur.days = days.map(d => ({ day: d, all: by[d].all, m5: by[d].m5 }));
+  const W = Math.max(280, box.clientWidth), H = 200, m = { t: 18, r: 4, b: 22, l: 4 };
+  const svg = svgEl('svg', { width: '100%', viewBox: `0 0 ${W} ${H}` });
+  const max = Math.max(1, ...days.map(d => by[d].all));
+  const step = (W - m.l - m.r) / days.length, bw = Math.min(32, step * .62);
+  const y = v => H - m.b - (v / max) * (H - m.t - m.b);
+  days.forEach((d, i) => {
+    const x = m.l + i * step + (step - bw) / 2, v = by[d];
+    svg.append(svgEl('rect', { x, y: y(v.all), width: bw, height: H - m.b - y(v.all), rx: 4, fill: 'var(--bar)' }));
+    if (v.m5) svg.append(svgEl('rect', { x, y: y(v.m5), width: bw, height: H - m.b - y(v.m5), rx: 4, fill: 'var(--gold)' }));
+    const t = svgEl('text', { x: x + bw / 2, y: y(v.all) - 5, 'text-anchor': 'middle', fill: 'var(--mut)', 'font-size': 12 }); t.textContent = v.all; svg.append(t);
+    const l = svgEl('text', { x: x + bw / 2, y: H - 6, 'text-anchor': 'middle', fill: 'var(--mut)', 'font-size': 11 });
+    l.textContent = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(d + 'T12:00Z')); svg.append(l);
+  });
+  box.append(svg);
+}
+
+/* ---------- Kp ---------- */
+function parseKp(j) {
+  // supporta sia il formato a righe (prima riga = intestazione) sia quello a oggetti
+  if (Array.isArray(j) && Array.isArray(j[0])) {
+    const h = j[0], it = h.indexOf('time_tag'), ik = h.findIndex(x => /^kp$/i.test(x));
+    return j.slice(1).map(r => ({ t: new Date(r[it].replace(' ', 'T') + 'Z'), kp: Number(r[ik]) }));
+  }
+  return j.map(r => ({ t: new Date(String(r.time_tag).replace(' ', 'T').replace(/Z?$/, 'Z')), kp: Number(r.Kp ?? r.kp ?? r.kp_index) }));
+}
+function renderKp(j, ref) {
+  const since = ref - 7 * 864e5;
+  const rows = parseKp(j).filter(r => !isNaN(r.kp) && r.t.getTime() >= since);
+  cur.kp = rows;
+  const peak = rows.reduce((a, b) => (b.kp > a.kp ? b : a), rows[0]);
+  cur.peak = peak;
+  setText('k-kp', peak.kp.toFixed(1));
+  setText('k-kp-s', (gLevel(peak.kp) ? 'Tempesta ' + gLevel(peak.kp) : 'Nessuna tempesta') + ' · ' + fmt(peak.t, { day: 'numeric', month: 'short' }));
+  const box = $('kp-chart'); box.innerHTML = '';
+  const W = Math.max(280, box.clientWidth), H = 200, m = { t: 10, r: 6, b: 22, l: 20 };
+  const svg = svgEl('svg', { width: '100%', viewBox: `0 0 ${W} ${H}` });
+  const y = v => H - m.b - (v / 9) * (H - m.t - m.b);
+  [3, 6, 9].forEach(v => { svg.append(svgEl('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: '#222b2f' })); });
+  [0, 3, 6, 9].forEach(v => { const t = svgEl('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end', fill: 'var(--mut)', 'font-size': 11 }); t.textContent = v; svg.append(t); });
+  svg.append(svgEl('line', { x1: m.l, x2: W - m.r, y1: y(5), y2: y(5), stroke: '#6b777d', 'stroke-dasharray': '4 3' }));
+  const step = (W - m.l - m.r) / rows.length, bw = Math.max(1, step * .78);
+  const col = k => k >= 7 ? 'var(--red)' : k >= 5 ? 'var(--gold)' : 'var(--bar)';
+  const bars = rows.map((r, i) => {
+    const b = svgEl('rect', { x: m.l + i * step, y: y(r.kp), width: bw, height: H - m.b - y(r.kp), rx: Math.min(2, bw / 2), fill: col(r.kp) });
+    svg.append(b); return b;
+  });
+  rows.forEach((r, i) => {
+    if (r.t.getUTCHours() === 0 && !(W < 420 && r.t.getUTCDate() % 2)) {
+      const t = svgEl('text', { x: m.l + i * step, y: H - 6, fill: 'var(--mut)', 'font-size': 11 });
+      t.textContent = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(r.t); svg.append(t);
+    }
+  });
+  const tip = document.createElement('div'); tip.className = 'tip';
+  const hit = svgEl('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: 'transparent' });
+  const move = ev => {
+    const p = ev.touches ? ev.touches[0] : ev, rc = svg.getBoundingClientRect(), sc = rc.width / W;
+    const i = Math.max(0, Math.min(rows.length - 1, Math.floor(((p.clientX - rc.left) / sc - m.l) / step)));
+    bars.forEach((b, j) => b.setAttribute('opacity', j === i ? 1 : .5));
+    tip.innerHTML = ''; const a = document.createElement('div'); a.className = 'd'; a.textContent = fmt(rows[i].t);
+    const b = document.createElement('div'); b.textContent = 'Kp ' + rows[i].kp.toFixed(2) + (gLevel(rows[i].kp) ? ' · ' + gLevel(rows[i].kp) : '');
+    tip.append(a, b); tip.style.display = 'block';
+    const x = (m.l + i * step + bw / 2) * sc, w = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(box.clientWidth - w, x - w / 2)) + 'px';
+    tip.style.top = Math.max(0, y(rows[i].kp) * sc - tip.offsetHeight - 8) + 'px';
+  };
+  hit.addEventListener('mousemove', move); hit.addEventListener('touchmove', move, { passive: true });
+  hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; bars.forEach(b => b.setAttribute('opacity', 1)); });
+  svg.append(hit); box.append(svg, tip);
+  return peak;
+}
+
+/* ---------- GDACS ---------- */
+function renderGdacs(j, ref) {
+  const since = ref - 7 * 864e5;
+  const ev = (j.features || []).map(f => f.properties || f).filter(p => p && new Date(String(p.todate || p.fromdate).replace(/Z?$/, 'Z')).getTime() >= since);
+  const major = ev.filter(p => /orange|red/i.test(p.alertlevel))
+    .sort((a, b) => (/red/i.test(b.alertlevel) - /red/i.test(a.alertlevel)) || (new Date(b.fromdate) - new Date(a.fromdate)));
+  cur.major = major;
+  const reds = major.filter(p => /red/i.test(p.alertlevel)).length;
+  const wf = ev.filter(p => p.eventtype === 'WF');
+  cur.wf = wf;
+  setText('k-al', major.length);
+  setText('k-al-s', reds ? `${reds} ${reds > 1 ? 'rosse' : 'rossa'}` : 'nessuna rossa');
+  setText('k-wf', wf.length);
+  const wz = {}; wf.forEach(p => { const c = p.country || 'n.d.'; wz[c] = (wz[c] || 0) + 1; });
+  const tz = Object.entries(wz).sort((a, b) => b[1] - a[1])[0];
+  setText('k-wf-s', tz ? `soprattutto ${tz[0]} (${tz[1]})` : '—');
+  const tb = $('al-body'); tb.textContent = '';
+  if (!major.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 5; td.className = 'empty'; td.textContent = 'Nessuna allerta arancio o rossa negli ultimi 7 giorni'; tr.append(td); tb.append(tr); }
+  major.forEach(p => {
+    const tr = document.createElement('tr');
+    const lvl = /red/i.test(p.alertlevel) ? 'Red' : 'Orange';
+    const c1 = document.createElement('td'); const s = document.createElement('span'); s.className = 'pill ' + lvl; s.textContent = lvl === 'Red' ? 'Rossa' : 'Arancio'; c1.append(s);
+    const c2 = document.createElement('td'); c2.textContent = TYPE[p.eventtype] || p.eventtype;
+    const c3 = document.createElement('td'); c3.textContent = p.country || '—';
+    const c4 = document.createElement('td');
+    const link = p.url && (p.url.report || p.url.details);
+    if (link) { const a = document.createElement('a'); a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = p.name || p.description || '—'; c4.append(a); }
+    else c4.textContent = p.name || p.description || '—';
+    const c5 = document.createElement('td'); c5.className = 'hn'; c5.textContent = p.fromdate ? fmt(new Date(p.fromdate.replace(/Z?$/, 'Z'))) : '—';
+    tr.append(c1, c2, c3, c4, c5); tb.append(tr);
+  });
+  return { major, reds };
+}
+
+/* ---------- Avvio ---------- */
+// Ogni fonte: prima i dati live, poi l'ultima copia salvata su questo dispositivo, poi l'istantanea nel file.
+async function source(key, url, toData) {
+  try {
+    const raw = await getJSON(url);
+    store.set('nx-' + key, { at: Date.now(), raw });
+    return { raw, ref: Date.now(), live: true };
+  } catch (e) {
+    const c = store.get('nx-' + key);
+    if (c && c.raw) return { raw: c.raw, ref: c.at, live: false };
+    return { raw: toData(), ref: Date.parse(SNAP.at), live: false, snap: true };
+  }
+}
+const snapQuakes = () => ({ features: SNAP.quakes.map(q => ({ properties: { mag: q.mag, place: q.place, time: q.time }, geometry: { coordinates: [0, 0, q.depth] } })) });
+const snapKp = () => [['time_tag', 'Kp']].concat(SNAP.kp.map(r => [r[0].replace('Z', ''), r[1]]));
+const snapGdacs = () => ({ features: SNAP.gdacs.map(p => ({ properties: p })) });
+
+async function load() {
+  setText('upd', 'Caricamento dati…');
+  const [eq, kp, gd] = await Promise.all([source('usgs', USGS, snapQuakes), source('kp', KP, snapKp), source('gdacs', GDACS, snapGdacs)]);
+  SRC.usgs = eq; SRC.kp = kp; SRC.gdacs = gd;
+  const [elS, buS] = await Promise.all([loadElec(zone), loadBuoys()]);
+  SRC.el = elS; SRC.buoy = buS;
+  let e1, b1;
+  try { e1 = renderElec(elS, zone); } catch (e) { console.error(e); }
+  try { b1 = renderBuoys(buS); } catch (e) { console.error(e); }
+  let q, k, g;
+  try { q = renderQuakes(eq.raw, eq.ref); } catch (e) { console.error(e); }
+  if (!q) { ['k-max', 'k-m5'].forEach(id => setText(id, '—')); errBox($('eq-chart'), 'Dati USGS non disponibili'); }
+  try { k = renderKp(kp.raw, kp.ref); } catch (e) { console.error(e); }
+  if (!k) { setText('k-kp', '—'); errBox($('kp-chart'), 'Dati NOAA non disponibili'); }
+  try { g = renderGdacs(gd.raw, gd.ref); } catch (e) { console.error(e); }
+  if (!g) { ['k-al', 'k-wf'].forEach(id => setText(id, '—')); $('al-body').innerHTML = '<tr><td colspan="5" class="empty">Dati GDACS non disponibili ora.</td></tr>'; }
+  $('gd-badge').textContent = gd.live ? '' : 'dati del ' + fmt(new Date(gd.ref));
+  const parts = [];
+  if (q && q.top) parts.push(`La scossa più forte della settimana è stata di magnitudo <b>${q.top.mag.toFixed(1)}</b> in ${esc(shortPlace(q.top.place))}`);
+  if (k) parts.push(gLevel(k.kp) ? `l'indice Kp ha toccato <b>${k.kp.toFixed(1)}</b>, una tempesta geomagnetica ${gLevel(k.kp).split(' ')[1]}` : `nessuna tempesta geomagnetica (Kp massimo <b>${k.kp.toFixed(1)}</b>)`);
+  if (e1) parts.push(`l'elettricità in ${ZONES[zone]} costa in media <b>€ ${eur(e1.avg)}</b>/MWh`);
+  if (g) parts.push(g.reds ? `GDACS segnala <b>${g.reds}</b> ${g.reds > 1 ? 'allerte rosse' : 'allerta rossa'}` : `nessuna allerta rossa GDACS`);
+  $('take').innerHTML = parts.length ? parts.join('; ').replace(/^./, c => c.toUpperCase()) + '.' : 'Dati non disponibili al momento.';
+  const all = [eq, kp, gd, elS, buS].filter(Boolean), live = all.filter(x => x.live).length;
+  $('dot').classList.toggle('off', live < all.length);
+  if (live === all.length) setText('upd', 'In diretta · aggiornato alle ' + fmt(new Date(), { hour: '2-digit', minute: '2-digit' }) + ' · si aggiorna ogni 10 minuti');
+  else if (live === 0) setText('upd', 'Senza connessione · dati del ' + fmt(new Date(Math.min(...all.map(x => x.ref)))));
+  else setText('upd', 'In parte offline · alcune fonti mostrano l\'ultima copia salvata');
+  if (eq.snap) $('k-m5-s').textContent = $('k-m5-s').textContent.replace(/ · \d+ M4\.5\+$/, '');
+}
+function csvCell(v) { const s = String(v ?? ''); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+function downloadCSV() {
+  const L = [['sezione', 'data_ora_utc', 'valore', 'luogo_o_paese', 'dettaglio', 'fonte']];
+  cur.quakes.forEach(q => L.push(['terremoto M5+', q.time.toISOString(), q.mag, q.place, 'profondità km ' + Math.round(q.depth), 'USGS']));
+  cur.kp.forEach(r => L.push(['indice Kp', r.t.toISOString(), r.kp, '', gLevel(r.kp) || '', 'NOAA SWPC']));
+  if (cur.el) cur.el.rows.forEach(r => L.push(['elettricità ' + cur.el.zone, r.t.toISOString(), r.p, ZONES[cur.el.zone] || cur.el.zone, 'EUR/MWh', 'SMARD.de via Energy-Charts']));
+  if (cur.buoy) cur.buoy.top.forEach(r => L.push(['boa (onda m)', r.time.toISOString(), r.wvht, 'boa ' + r.stn + ' ' + pos(r.lat, r.lon), 'vento m/s ' + f1(r.wspd), 'NOAA NDBC']));
+  cur.major.forEach(p => L.push(['allerta ' + p.alertlevel, p.fromdate, TYPE[p.eventtype] || p.eventtype, p.country, p.name || p.description || '', 'GDACS']));
+  const blob = new Blob(['﻿' + L.map(r => r.map(csvCell).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'nexum-quadro-' + dayKey(new Date()) + '.csv'; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+
+/* ---------- Elettricità ---------- */
+let zone = 'IT-North';
+async function loadElec(z) {
+  const key = 'nx-el-' + z;
+  try {
+    const raw = await getJSON(ELEC(z));
+    if (!raw || !Array.isArray(raw.price) || !raw.price.length) throw new Error('vuoto');
+    store.set(key, { at: Date.now(), raw });
+    return { raw, ref: Date.now(), live: true };
+  } catch (e) {
+    const c = store.get(key);
+    if (c && c.raw) return { raw: c.raw, ref: c.at, live: false };
+    if (z === SNAP2.el.zone) return { raw: { unix_seconds: SNAP2.el.ts, price: SNAP2.el.price, license_info: SNAP2.el.license, unit: 'EUR / MWh' }, ref: Date.parse(SNAP.at), live: false, snap: true };
+    return null;
+  }
+}
+const eur = v => v.toLocaleString('it-IT', { maximumFractionDigits: 0 });
+const hhmm = d => fmt(d, { hour: '2-digit', minute: '2-digit' });
+function renderElec(src, z) {
+  const box = $('el-chart'); box.innerHTML = '';
+  setText('k-el-z', ZONES[z] || z);
+  if (!src) { setText('k-el', '—'); setText('k-el-s', 'dati non disponibili'); errBox(box, 'Prezzi non disponibili ora'); cur.el = null; return null; }
+  const d = src.raw;
+  const rows = d.unix_seconds.map((t, i) => ({ t: new Date(t * 1000), p: d.price[i] })).filter(r => r.p != null);
+  const avg = rows.reduce((a, r) => a + r.p, 0) / rows.length;
+  const mn = rows.reduce((a, b) => (b.p < a.p ? b : a)), mx = rows.reduce((a, b) => (b.p > a.p ? b : a));
+  const open = /CC BY/i.test(d.license_info || '');
+  cur.el = { rows, avg, mn, mx, zone: z, license: d.license_info || '—', open, day: rows[0].t };
+  setText('k-el', '€ ' + eur(avg));
+  setText('k-el-s', `€/MWh media · ${fmt(rows[0].t, { day: 'numeric', month: 'short' })} · max ${eur(mx.p)} alle ${hhmm(mx.t)}`);
+  const sorted = rows.map(r => r.p).sort((a, b) => a - b);
+  const q1 = sorted[Math.floor(sorted.length * .25)], q3 = sorted[Math.floor(sorted.length * .75)];
+  const W = Math.max(280, box.clientWidth), H = 200, m = { t: 14, r: 6, b: 22, l: 34 };
+  const svg = svgEl('svg', { width: '100%', viewBox: `0 0 ${W} ${H}` });
+  const top = Math.ceil(mx.p / 50) * 50, bot = Math.min(0, Math.floor(mn.p / 50) * 50);
+  const y = v => H - m.b - ((v - bot) / (top - bot)) * (H - m.t - m.b);
+  for (let v = bot; v <= top; v += 50) {
+    svg.append(svgEl('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: '#222b2f' }));
+    const t = svgEl('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end', fill: 'var(--mut)', 'font-size': 11 }); t.textContent = v; svg.append(t);
+  }
+  const avgL = svgEl('line', { x1: m.l, x2: W - m.r, y1: y(avg), y2: y(avg), stroke: '#6b777d', 'stroke-dasharray': '4 3' }); svg.append(avgL);
+  const step = (W - m.l - m.r) / rows.length, bw = Math.max(1, step * .8);
+  const col = p => p >= q3 ? 'var(--gold)' : p <= q1 ? 'var(--green)' : 'var(--bar)';
+  const bars = rows.map((r, i) => { const b = svgEl('rect', { x: m.l + i * step, y: Math.min(y(r.p), y(0)), width: bw, height: Math.abs(y(0) - y(r.p)), rx: Math.min(2, bw / 2), fill: col(r.p) }); svg.append(b); return b; });
+  rows.forEach((r, i) => { const h = Number(hhmm(r.t).slice(0, 2)); if (r.t.getMinutes() === 0 && h % (W < 420 ? 6 : 3) === 0) { const t = svgEl('text', { x: m.l + i * step, y: H - 6, fill: 'var(--mut)', 'font-size': 11 }); t.textContent = h + ':00'; svg.append(t); } });
+  const tip = document.createElement('div'); tip.className = 'tip';
+  const hit = svgEl('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: 'transparent' });
+  const move = ev => {
+    const p = ev.touches ? ev.touches[0] : ev, rc = svg.getBoundingClientRect(), sc = rc.width / W;
+    const i = Math.max(0, Math.min(rows.length - 1, Math.floor(((p.clientX - rc.left) / sc - m.l) / step)));
+    bars.forEach((b, j) => b.setAttribute('opacity', j === i ? 1 : .5));
+    tip.innerHTML = ''; const a = document.createElement('div'); a.className = 'd'; a.textContent = hhmm(rows[i].t) + '–' + hhmm(new Date(rows[i].t.getTime() + 9e5));
+    const b = document.createElement('div'); b.textContent = '€ ' + rows[i].p.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' /MWh';
+    tip.append(a, b); tip.style.display = 'block';
+    const x = (m.l + i * step + bw / 2) * sc, w = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(box.clientWidth - w, x - w / 2)) + 'px';
+    tip.style.top = Math.max(0, y(rows[i].p) * sc - tip.offsetHeight - 8) + 'px';
+  };
+  hit.addEventListener('mousemove', move); hit.addEventListener('touchmove', move, { passive: true });
+  hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; bars.forEach(b => b.setAttribute('opacity', 1)); });
+  svg.append(hit); box.append(svg, tip);
+  if (!open) { const n = el('p', 'note', 'Attenzione: la fonte indica per questa zona una licenza non aperta.'); box.append(n); }
+  return cur.el;
+}
+$('zone').addEventListener('change', async e => { zone = e.target.value; const src = await loadElec(zone); SRC.el = src; renderElec(src, zone); });
+
+/* ---------- Boe ---------- */
+const num = v => (v == null || v === 'MM' || v === '' || (typeof v === 'number' && isNaN(v))) ? null : Number(v);
+async function getText(url) { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.text(); }
+function parseErddap(j) {
+  const c = j.table.columnNames, ix = n => c.indexOf(n);
+  return j.table.rows.map(r => ({ stn: String(r[ix('station')]), lat: r[ix('latitude')], lon: r[ix('longitude')], time: new Date(r[ix('time')]), wspd: num(r[ix('wspd')]), gst: num(r[ix('gst')]), wvht: num(r[ix('wvht')]), wtmp: num(r[ix('wtmp')]) }));
+}
+function parseNdbc(t) {
+  const L = t.split('\n'), h = L[0].replace(/^#/, '').trim().split(/\s+/), ix = n => h.indexOf(n);
+  const lim = Date.now() - 6 * 36e5;
+  return L.slice(2).map(l => l.trim().split(/\s+/)).filter(a => a.length >= h.length).map(a => ({
+    stn: a[ix('STN')], lat: Number(a[ix('LAT')]), lon: Number(a[ix('LON')]),
+    time: new Date(Date.UTC(+a[ix('YYYY')], +a[ix('MM')] - 1, +a[ix('DD')], +a[ix('hh')], +a[ix('mm')])),
+    wspd: num(a[ix('WSPD')]), gst: num(a[ix('GST')]), wvht: num(a[ix('WVHT')]), wtmp: num(a[ix('WTMP')])
+  })).filter(r => r.time.getTime() >= lim);
+}
+async function loadBuoys() {
+  try { const rows = parseErddap(await getJSON(ERDDAP)); if (!rows.length) throw 0; store.set('nx-buoy', { at: Date.now(), rows, via: 'erddap' }); return { rows, ref: Date.now(), live: true, via: 'erddap' }; } catch (e) {}
+  try { const rows = parseNdbc(await getText(NDBC)); if (!rows.length) throw 0; store.set('nx-buoy', { at: Date.now(), rows, via: 'ndbc' }); return { rows, ref: Date.now(), live: true, via: 'ndbc' }; } catch (e) {}
+  const c = store.get('nx-buoy');
+  if (c && c.rows) return { rows: c.rows.map(r => Object.assign(r, { time: new Date(r.time) })), ref: c.at, live: false, via: c.via };
+  return { rows: SNAP2.buoys.map(r => Object.assign({}, r, { time: new Date(r.time) })), count: SNAP2.buoyCount, ref: Date.parse(SNAP.at), live: false, snap: true };
+}
+const pos = (la, lo) => `${Math.abs(la).toFixed(1).replace('.', ',')}°${la >= 0 ? 'N' : 'S'} ${Math.abs(lo).toFixed(1).replace('.', ',')}°${lo >= 0 ? 'E' : 'W'}`;
+const stnUrl = id => 'https://www.ndbc.noaa.gov/station_page.php?station=' + encodeURIComponent(String(id).toLowerCase());
+const f1 = v => v == null ? '—' : v.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+function renderBuoys(src) {
+  const waves = src.rows.filter(r => r.wvht != null).sort((a, b) => b.wvht - a.wvht);
+  const top = waves.slice(0, 15), count = src.count || src.rows.length;
+  cur.buoy = { top, count, max: waves[0] };
+  if (waves[0]) { setText('k-bu', f1(waves[0].wvht) + ' m'); setText('k-bu-s', `boa ${waves[0].stn} · ${count} boe ${src.snap ? 'nel file' : 'attive'}`); }
+  else { setText('k-bu', '—'); setText('k-bu-s', 'nessuna misura'); }
+  const tb = $('bu-body'); tb.textContent = '';
+  top.forEach(r => {
+    const tr = document.createElement('tr');
+    const c1 = document.createElement('td'); const a = document.createElement('a'); a.href = stnUrl(r.stn); a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.stn; c1.append(a);
+    const c2 = el('td', 'num', f1(r.wvht)); const c3 = el('td', 'num', f1(r.wspd)); const c4 = el('td', 'num hn', f1(r.wtmp)); const c5 = el('td', 'hn', pos(r.lat, r.lon));
+    tr.append(c1, c2, c3, c4, c5); tb.append(tr);
+  });
+  return cur.buoy;
+}
+/* ---------- Fonte e dati ---------- */
+const META = {
+  usgs: { name: 'USGS Earthquake Hazards Program', org: 'U.S. Geological Survey (governo USA)', dataset: 'Feed GeoJSON «M4.5+ ultima settimana»', url: USGS, home: 'https://earthquake.usgs.gov/earthquakes/map/', license: 'Pubblico dominio (dati del governo USA)', freq: 'Ogni minuto' },
+  kp: { name: 'NOAA Space Weather Prediction Center', org: 'National Oceanic and Atmospheric Administration (governo USA)', dataset: 'Indice Kp planetario, valori ogni 3 ore', url: KP, home: 'https://www.swpc.noaa.gov/products/planetary-k-index', license: 'Pubblico dominio (dati del governo USA)', freq: 'Ogni 3 ore' },
+  el: { name: 'Bundesnetzagentur | SMARD.de', org: 'Autorità federale tedesca delle reti, dati letti tramite Energy-Charts (Fraunhofer ISE)', dataset: 'Prezzi day-ahead per zona di offerta, ogni 15 minuti', url: ELEC('IT-North'), home: 'https://www.smard.de/', license: 'CC BY 4.0, citando Bundesnetzagentur | SMARD.de', freq: 'Ogni giorno, dopo l\'asta delle 12' },
+  buoy: { name: 'NOAA National Data Buoy Center', org: 'National Oceanic and Atmospheric Administration (governo USA)', dataset: 'Ultime osservazioni delle boe (vento, onde, temperatura)', url: NDBC, home: 'https://www.ndbc.noaa.gov/', license: 'Pubblico dominio (dati del governo USA)', freq: 'Ogni 10–60 minuti' },
+  gdacs: { name: 'GDACS', org: 'Commissione Europea (JRC) e Nazioni Unite (OCHA)', dataset: 'Elenco eventi in corso con livello di allerta', url: GDACS, home: 'https://www.gdacs.org/', license: 'Uso libero citando GDACS; condizioni sul sito', freq: 'Più volte al giorno' }
+};
+const INFO = {
+  max: { src: 'usgs', title: 'Magnitudo massima', how: 'La magnitudo più alta tra tutte le scosse M4.5+ registrate negli ultimi 7 giorni.',
+    big: () => cur.top ? cur.top.mag.toFixed(1) : '—',
+    table: () => [['Mag.', 'Luogo', 'Ora', 'Prof. km'], cur.all.slice().sort((a, b) => b.mag - a.mag).slice(0, 10).map((q, i) => ({ hl: i === 0, url: q.url, c: [q.mag.toFixed(1), q.place, fmt(q.time), Math.round(q.depth)] }))],
+    note: 'Le 10 scosse più forti; la prima riga è quella del numero.' },
+  m5: { src: 'usgs', title: 'Terremoti M5+', how: 'Numero di scosse di magnitudo 5 o superiore negli ultimi 7 giorni.',
+    big: () => String(cur.quakes.length),
+    table: () => [['Mag.', 'Luogo', 'Ora', 'Prof. km'], cur.quakes.slice().sort((a, b) => b.time - a.time).map(q => ({ url: q.url, c: [q.mag.toFixed(1), q.place, fmt(q.time), Math.round(q.depth)] }))],
+    note: 'Tutte le scosse contate, dalla più recente.' },
+  day: { src: 'usgs', title: 'Terremoti per giorno', how: 'Scosse M4.5+ raggruppate per giorno in ora italiana; tra parentesi quante sono M5+.',
+    big: () => String(cur.all.length) + ' scosse',
+    table: () => [['Giorno', 'M4.5+', 'di cui M5+'], cur.days.map(d => ({ c: [new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(d.day + 'T12:00Z')), d.all, d.m5] }))] },
+  kp: { src: 'kp', title: 'Indice Kp', how: 'Valore più alto dell\'indice Kp negli ultimi 7 giorni. Scala 0–9: da 5 tempesta G1, 7 = G3 forte, 9 = G5 estrema.',
+    big: () => cur.peak ? cur.peak.kp.toFixed(2) : '—',
+    table: () => [['Ora', 'Kp', 'Classe'], cur.kp.slice().sort((a, b) => b.t - a.t).map(r => ({ hl: cur.peak && r.t.getTime() === cur.peak.t.getTime(), c: [fmt(r.t), r.kp.toFixed(2), gLevel(r.kp) || '—'] }))],
+    note: 'Tutti i valori del periodo, dal più recente; evidenziato il picco.' },
+  al: { src: 'gdacs', title: 'Allerte arancio e rosse', how: 'Eventi GDACS attivi negli ultimi 7 giorni con livello di allerta arancio o rosso. Il livello stima l\'impatto sulla popolazione, non solo l\'intensità.',
+    big: () => String(cur.major.length),
+    table: () => [['Allerta', 'Tipo', 'Paese', 'Evento'], cur.major.map(p => ({ url: p.url && (p.url.report || p.url.details), c: [/red/i.test(p.alertlevel) ? 'Rossa' : 'Arancio', TYPE[p.eventtype] || p.eventtype, p.country || '—', p.name || p.description || '—'] }))] },
+  el: { src: 'el', title: 'Prezzo dell\'elettricità', how: 'Media dei prezzi della borsa elettrica del giorno prima per la zona scelta, su tutti i quarti d\'ora della giornata. È il prezzo all\'ingrosso, non quello in bolletta.',
+    big: () => cur.el ? '€ ' + eur(cur.el.avg) + ' /MWh' : '—',
+    table: () => [['Ora', '€/MWh'], cur.el ? cur.el.rows.map(r => ({ hl: r === cur.el.mx || r === cur.el.mn, c: [hhmm(r.t) + '–' + hhmm(new Date(r.t.getTime() + 9e5)), r.p.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })] })) : []],
+    note: 'Tutti i quarti d\'ora; evidenziati il più caro e il più conveniente.', extra: () => cur.el ? 'Zona: ' + (ZONES[cur.el.zone] || cur.el.zone) + ' · licenza indicata dalla fonte: ' + cur.el.license : '' },
+  buoy: { src: 'buoy', title: 'Boe oceaniche', how: 'Altezza d\'onda significativa (media del terzo più alto delle onde) misurata dalle boe nelle ultime ore; la più alta è il numero in alto.',
+    big: () => cur.buoy && cur.buoy.max ? f1(cur.buoy.max.wvht) + ' m' : '—',
+    table: () => [['Boa', 'Onda m', 'Vento m/s', 'Raffica', 'Acqua °C', 'Ora'], cur.buoy ? cur.buoy.top.map((r, i) => ({ hl: i === 0, url: stnUrl(r.stn), c: [r.stn, f1(r.wvht), f1(r.wspd), f1(r.gst), f1(r.wtmp), hhmm(r.time)] })) : []],
+    note: 'Le 15 boe con onda più alta. La rete è soprattutto statunitense, con alcune boe in Atlantico e Mare del Nord.', extra: () => SRC.buoy && SRC.buoy.via === 'erddap' ? 'Letti dal server ERDDAP NOAA CoastWatch, che ripubblica i dati NDBC.' : '' },
+  wf: { src: 'gdacs', title: 'Incendi segnalati', how: 'Notifiche GDACS di incendi boschivi negli ultimi 7 giorni, a qualsiasi livello di allerta.',
+    big: () => String(cur.wf.length),
+    table: () => [['Paese', 'Allerta', 'Inizio'], cur.wf.map(p => ({ url: p.url && (p.url.report || p.url.details), c: [p.country || '—', /red/i.test(p.alertlevel) ? 'Rossa' : /orange/i.test(p.alertlevel) ? 'Arancio' : 'Verde', p.fromdate ? fmt(new Date(String(p.fromdate).replace(/Z?$/, 'Z')), { day: 'numeric', month: 'short' }) : '—'] }))] }
+};
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function openInfo(key) {
+  const I = INFO[key], M = Object.assign({}, META[I.src], I.src === 'el' ? { url: ELEC(zone) } : {}), st = SRC[I.src];
+  $('sh-title').textContent = I.title;
+  const b = $('sh-body'); b.textContent = '';
+  b.append(el('p', 'sh-big', I.big()), el('p', 'note', I.how));
+  b.append(el('div', 'sh-sec', 'Fonte'));
+  const dl = el('dl', 'sh-kv');
+  const kv = (k, v) => { dl.append(el('dt', '', k)); const dd = el('dd'); typeof v === 'string' ? dd.textContent = v : dd.append(v); dl.append(dd); };
+  kv('Fonte', M.name); kv('Ente', M.org); kv('Dati', M.dataset); kv('Licenza', M.license); kv('Aggiornamento', M.freq);
+  if (st) {
+    const s = el('span', 'state ' + (st.live ? 'live' : 'copy'), st.live ? 'In diretta' : st.snap ? 'Istantanea inclusa nel file' : 'Copia salvata');
+    const w = el('span'); w.append(s, ' letti il ' + fmt(new Date(st.ref))); kv('Stato', w);
+  }
+  const a1 = el('a', '', 'Apri la fonte'); a1.href = M.home; a1.target = '_blank'; a1.rel = 'noopener';
+  const a2 = el('a', '', 'Dati originali (JSON)'); a2.href = M.url; a2.target = '_blank'; a2.rel = 'noopener';
+  const links = el('span'); links.append(a1, ' · ', a2); kv('Link', links);
+  b.append(dl);
+  if (I.extra && I.extra()) b.append(el('p', 'note', I.extra()));
+  const [head, rows] = I.table();
+  b.append(el('div', 'sh-sec', 'Dati (' + rows.length + (rows.length === 1 ? ' riga)' : ' righe)')));
+  if (I.note) b.append(el('p', 'note', I.note));
+  const t = el('table'), th = el('thead'), hr = el('tr');
+  head.forEach(h => hr.append(el('th', '', h))); th.append(hr); t.append(th);
+  const tb = el('tbody');
+  if (!rows.length) { const tr = el('tr'); const td = el('td', 'empty', 'Nessun dato nel periodo'); td.colSpan = head.length; tr.append(td); tb.append(tr); }
+  rows.forEach(r => {
+    const tr = el('tr', r.hl ? 'hl' : '');
+    r.c.forEach((v, i) => {
+      const td = el('td', typeof v === 'number' || /^\d+(\.\d+)?$/.test(v) ? 'num' : '');
+      if (i === 0 && r.url) { const a = el('a', '', String(v)); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; td.append(a); } else td.textContent = String(v);
+      tr.append(td);
+    });
+    tb.append(tr);
+  });
+  t.append(tb); b.append(t);
+  $('sheet').classList.add('open'); $('sheet-bg').classList.add('open');
+  $('sh-x').focus();
+}
+function closeInfo() { $('sheet').classList.remove('open'); $('sheet-bg').classList.remove('open'); }
+document.querySelectorAll('[data-info]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openInfo(b.dataset.info); }));
+$('sh-x').addEventListener('click', closeInfo); $('sheet-bg').addEventListener('click', closeInfo);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo(); });
+$('b-csv').addEventListener('click', downloadCSV);
+$('b-pdf').addEventListener('click', () => window.print());
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+$('refresh').addEventListener('click', load);
+let rt, lastW = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - lastW) < 40) return; lastW = innerWidth; clearTimeout(rt); rt = setTimeout(load, 400); });
+load();
+setInterval(load, 10 * 60 * 1000);
+})();
+</script>
+</body>
+</html>
